@@ -1,0 +1,332 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<meta charset="utf-8">
+<title>MX-5 Odyssey</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+  /* Layout: full-bleed canvas; instrument cluster bottom-right, map bottom-left, mode selector top-left.
+     Single dark look (a car dashboard at night), deliberately not theme-switched. */
+  :root {
+    color-scheme: dark;
+    --ink: #f3efe6;          /* gauge numerals */
+    --dim: #a59f93;
+    --face: #0d0e10;         /* gauge face */
+    --glass: rgba(10, 11, 13, 0.62);
+    --needle: #ff7a1a;       /* NA cluster orange needle */
+    --red: #c8102e;          /* Classic Red */
+    --warn: #ffcf3f;
+    --sea: #3fa7c9;
+    --display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+    --body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body { margin: 0; background: #07080a; color: var(--ink); font-family: var(--body); overflow: hidden; user-select: none; }
+  #game { position: fixed; inset: 0; display: block; width: 100%; height: 100%; }
+  .hud { position: fixed; pointer-events: none; z-index: 5; }
+
+  /* mode selector */
+  #modes { top: calc(14px + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px)); display: flex; gap: 6px; pointer-events: auto; }
+  .mode { font: 600 15px/1 var(--display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim);
+    background: var(--glass); border: 1px solid rgba(255,255,255,0.12); padding: 9px 12px 8px; border-radius: 3px; cursor: pointer; display: flex; gap: 8px; align-items: center; }
+  .mode kbd { font: 600 11px/1 var(--display); color: var(--ink); border: 1px solid rgba(255,255,255,0.3); border-radius: 2px; padding: 2px 5px; }
+  .mode[aria-pressed="true"] { color: var(--ink); border-color: var(--needle); box-shadow: inset 0 -2px 0 var(--needle); }
+  .mode:focus-visible { outline: 2px solid var(--needle); outline-offset: 2px; }
+  #morph { top: calc(56px + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px)); font: 500 13px var(--display); letter-spacing: 0.12em; color: var(--needle); text-transform: uppercase; }
+
+  /* status line */
+  #status { top: calc(14px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); text-align: right; font: 500 14px/1.35 var(--display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); text-shadow: 0 1px 3px rgba(0,0,0,0.7); }
+  #status .sub { color: var(--dim); font-size: 12px; }
+  #countdown { position: fixed; top: 34%; left: 50%; transform: translate(-50%, -50%); font: 700 120px/1 var(--display); color: #fff; text-shadow: 0 4px 24px rgba(0,0,0,0.6); pointer-events: none; }
+  #wanted { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); text-align: center; font: 600 13px var(--display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); background: rgba(10,11,13,0.72); border: 1px solid rgba(255,80,80,0.5); border-radius: 4px; padding: 6px 12px; }
+  #wanted b { display: block; font-size: 22px; letter-spacing: 0.2em; color: #ff4a3d; }
+  #status .cash { font: 700 18px var(--display); letter-spacing: 0.06em; color: #7fe08a; font-variant-numeric: tabular-nums; }
+  #status .cash.flash { color: #fff; }
+  #nitro { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: 200px; width: 168px; height: 8px; border-radius: 4px; background: rgba(10,11,13,0.7); overflow: hidden; }
+  #nitro i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #1fa3ff, #9fe3ff); transform-origin: left; }
+  #garageUI { position: fixed; inset: 0; z-index: 8; display: grid; place-items: center; background: rgba(6,7,9,0.55); backdrop-filter: blur(4px); padding: 16px; }
+  #garageUI[hidden] { display: none; }
+  #garageUI .panel { width: min(560px, 100%); background: #111214; border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; padding: 20px 22px; display: grid; gap: 10px; max-height: calc(100vh - 32px); overflow: auto; color: var(--ink); }
+  #garageUI h2 { margin: 0; font: 700 30px/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; }
+  #garageUI .cash { margin: 0; font: 600 14px var(--display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); }
+  #garageUI .cash b { color: #7fe08a; font-size: 20px; margin-left: 6px; }
+  #garageUI .list { display: grid; gap: 6px; }
+  #garageUI .item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 10px; background: #18191c; border-radius: 4px; }
+  #garageUI .item b { font: 600 15px var(--display); letter-spacing: 0.08em; text-transform: uppercase; }
+  #garageUI .item small { display: block; font: 400 12.5px/1.35 var(--body); color: var(--dim); }
+  #garageUI .pips { margin-left: 8px; display: inline-flex; gap: 3px; vertical-align: middle; }
+  #garageUI .pips i { width: 14px; height: 6px; border-radius: 2px; background: #2c2e33; }
+  #garageUI .pips i.on { background: var(--needle); }
+  #garageUI .done { font: 600 13px var(--display); letter-spacing: 0.1em; color: var(--dim); text-transform: uppercase; }
+  #garageUI button { font: 600 14px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); background: #1c1d20; border: 1px solid rgba(255,255,255,0.14); border-radius: 3px; padding: 9px 12px; cursor: pointer; white-space: nowrap; }
+  #garageUI button:disabled { opacity: 0.4; cursor: default; }
+  #garageUI button:focus-visible { outline: 2px solid var(--needle); outline-offset: 2px; }
+  #garageUI button.primary { background: var(--red); border-color: var(--red); font-size: 16px; padding: 12px; }
+  #garageUI .swatches { display: flex; flex-wrap: wrap; gap: 6px; } #garageUI .swatches button { width: 26px; height: 26px; padding: 0; border-radius: 50%; }
+  #garageUI .seg { display: flex; flex-wrap: wrap; gap: 4px; } #garageUI .seg button { padding: 7px 8px; font-size: 12px; }
+  #status .clock { font-size: 22px; font-variant-numeric: tabular-nums; letter-spacing: 0.04em; }
+
+  /* cluster */
+  #instr { position: fixed; left: 216px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: clamp(280px, calc(100vw - 216px - 540px), 520px); aspect-ratio: 1040 / 300; height: auto; pointer-events: none; z-index: 2; }
+  #mechHud { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 1; }
+  @media (max-width: 900px) { #instr { left: 16px; bottom: 200px; width: min(420px, calc(100vw - 32px)); } }
+  #cluster { right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; align-items: flex-end; gap: 10px; }
+  #cluster canvas { width: 168px; height: 168px; }
+  #blink { position: absolute; left: 50%; bottom: 178px; transform: translateX(-30%); display: flex; gap: 120px; pointer-events: none; }
+  #blink span { font-size: 22px; color: #1b3a22; text-shadow: none; transition: color 0.05s; }
+  #blink span.on { color: #3dff6a; text-shadow: 0 0 10px #3dff6a; }
+  #cluster #fuel { width: 40px; height: 120px; }
+  #cluster #dmg { width: 80px; height: 120px; opacity: 0; transition: opacity 0.4s; }
+  #cluster #tyres { width: 100px; height: 120px; }
+  #readout { position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%); font: 600 12px var(--display); letter-spacing: 0.14em; color: var(--dim); white-space: nowrap; }
+
+  /* map */
+  #mapWrap { left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+  #minimap { width: 176px; height: 176px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.18); box-shadow: 0 4px 18px rgba(0,0,0,0.5); display: block; }
+  #bigmap { position: fixed; inset: 0; margin: auto; width: min(86vmin, 820px); height: min(86vmin, 820px); border: 2px solid rgba(255,255,255,0.2); border-radius: 4px; z-index: 6; box-shadow: 0 10px 60px rgba(0,0,0,0.6); }
+
+  /* warnings & toasts */
+  #warn { top: 22%; left: 0; right: 0; text-align: center; font: 700 22px var(--display); letter-spacing: 0.16em; text-transform: uppercase; color: var(--warn); text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
+  #toast { top: 30%; left: 0; right: 0; text-align: center; font: 600 17px var(--display); letter-spacing: 0.12em; color: var(--ink); text-transform: uppercase; text-shadow: 0 2px 8px rgba(0,0,0,0.8); transition: opacity 0.4s; }
+  #underwater { position: fixed; inset: 0; background: radial-gradient(ellipse at 50% 30%, rgba(30,110,120,0.35), rgba(4,30,40,0.85)); pointer-events: none; z-index: 4; }
+
+  /* help */
+  #help { top: calc(70px + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px)); background: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 12px 16px; font: 400 12.5px/1.5 var(--body); color: var(--ink); width: min(600px, calc(100vw - 32px)); display: grid; grid-template-columns: 1fr 1fr; gap: 0 22px; }
+  #help > div { min-width: 0; }
+  #help .close { grid-column: 1 / -1; margin-top: 8px; color: var(--dim); font: 500 12px var(--display); letter-spacing: 0.12em; text-transform: uppercase; }
+  #help h3 { margin: 0 0 4px; font: 600 13px var(--display); letter-spacing: 0.16em; text-transform: uppercase; color: var(--needle); }
+  #help h3:not(:first-child) { margin-top: 10px; }
+  #help dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 1px 12px; }
+  #help dt { font: 600 12px/1.6 var(--display); letter-spacing: 0.06em; color: var(--ink); white-space: nowrap; }
+  #help dd { margin: 0; color: var(--dim); }
+
+  /* loader */
+  #loader { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; background: #0b0b0c;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  #loader .inner { width: min(520px, 100%); }
+  #loader h1 { margin: 0; font: 700 clamp(44px, 10vw, 86px)/0.9 var(--display); letter-spacing: 0.02em; text-transform: uppercase; color: var(--ink); }
+  #loader h1 span { color: var(--red); }
+  #loader p { margin: 14px 0 26px; color: var(--dim); font: 400 15px/1.5 var(--body); max-width: 46ch; }
+  #bar { height: 3px; background: rgba(255,255,255,0.1); }
+  #bar i { display: block; height: 100%; width: 0; background: var(--needle); transition: width 0.25s; }
+  #stage { margin-top: 10px; font: 500 13px var(--display); letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); }
+  #go { margin-top: 22px; font: 700 18px var(--display); letter-spacing: 0.2em; text-transform: uppercase; color: #fff; background: var(--red); border: 0; padding: 14px 26px; border-radius: 2px; cursor: pointer; }
+  #go:focus-visible { outline: 2px solid var(--needle); outline-offset: 3px; }
+  #spec { margin-top: 28px; display: grid; grid-template-columns: repeat(3, auto); gap: 4px 22px; justify-content: start; font: 500 12px/1.4 var(--display); letter-spacing: 0.1em; color: var(--dim); text-transform: uppercase; }
+  #credit { margin-top: 22px; font-size: 11px; line-height: 1.5; color: var(--dim); max-width: 46ch; }
+  #credit a { color: inherit; }
+  #spec b { display: block; color: var(--ink); font-size: 18px; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
+
+  /* radio display */
+  #radio { top: calc(14px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); text-align: center; background: var(--glass); border: 1px solid rgba(255,255,255,0.12); border-radius: 3px; padding: 7px 14px 6px; max-width: min(460px, calc(100vw - 32px)); transition: opacity 0.6s; }
+  #radio .st { font: 700 15px/1.1 var(--display); letter-spacing: 0.16em; text-transform: uppercase; color: var(--needle); font-variant-numeric: tabular-nums; }
+  #radio .tr { font: 500 13px/1.3 var(--body); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #radio.dim { opacity: 0.35; }
+
+  /* pause menu */
+  #pause { position: fixed; inset: 0; z-index: 8; display: grid; place-items: center; background: rgba(6,7,9,0.62); backdrop-filter: blur(6px);
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  #pause .panel { width: min(520px, 100%); background: #111214; border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; padding: 22px 24px 20px; display: grid; gap: 12px; max-height: calc(100vh - 32px); overflow: auto; }
+  #pause h2 { margin: 0 0 4px; font: 700 34px/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink); }
+  #pause .row { display: grid; grid-template-columns: 140px 1fr; align-items: center; gap: 12px; }
+  #pause .row > span { font: 600 13px var(--display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); }
+  #pause .hint { margin: -4px 0 0 152px; font: 400 12.5px/1.4 var(--body); color: var(--dim); }
+  #pause button { font: 600 14px/1 var(--display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); background: #1c1d20; border: 1px solid rgba(255,255,255,0.14); border-radius: 3px; padding: 10px 12px; cursor: pointer; }
+  #pause button:hover { border-color: rgba(255,255,255,0.35); }
+  #pause button:focus-visible, #pause input:focus-visible { outline: 2px solid var(--needle); outline-offset: 2px; }
+  #pause button.primary { background: var(--red); border-color: var(--red); font-size: 17px; padding: 13px; }
+  #pause .seg { display: flex; gap: 4px; flex-wrap: wrap; }
+  #pause .row.top { align-items: start; }
+  body.photo .hud, body.photo #help { display: none !important; }
+  #photoBar { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 6; background: rgba(10,11,13,0.72); color: var(--ink); font: 500 13px/1.4 var(--display); letter-spacing: 0.06em; padding: 8px 14px; border-radius: 6px; max-width: calc(100vw - 32px); text-align: center; }
+  #photoBar button { font: 600 12px var(--display); letter-spacing: 0.1em; text-transform: uppercase; color: #fff; background: var(--red); border: 0; border-radius: 3px; padding: 6px 10px; cursor: pointer; }
+  .swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+  #pause .swatches button { width: 34px; height: 34px; padding: 0; border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); }
+  #pause .swatches button[aria-pressed="true"] { border-color: var(--needle); box-shadow: 0 0 0 2px #111214, 0 0 0 4px var(--needle); }
+  .missionList { display: grid; gap: 6px; margin-bottom: 6px; }
+  .missionList button { text-align: left; display: grid; gap: 4px; text-transform: none !important; letter-spacing: 0.02em !important; }
+  .missionList b { font: 700 15px var(--display); letter-spacing: 0.06em; text-transform: uppercase; }
+  .missionList small { font: 400 12px/1.35 var(--body); color: var(--dim); }
+  #mission { top: calc(64px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; background: rgba(10,11,13,0.66); border: 1px solid rgba(255,194,58,0.5); border-radius: 6px; padding: 8px 14px; font: 500 14px/1.35 var(--display); letter-spacing: 0.06em; color: var(--ink); max-width: calc(100vw - 32px); }
+  #mTitle { font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #ffc23a; }
+  #mArrow { font-size: 26px; color: #ffc23a; width: 30px; text-align: center; transition: transform 0.1s linear; }
+  #pause .seg button { flex: 1; }
+  #pause .seg button[aria-pressed="true"] { border-color: var(--needle); box-shadow: inset 0 -2px 0 var(--needle); }
+  #pause .radioCtl { display: grid; grid-template-columns: auto 1fr auto; gap: 6px; align-items: center; }
+  #pause #pRadio { text-align: center; font: 600 14px var(--display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--needle); }
+  #pause input[type=range] { width: 100%; accent-color: var(--needle); }
+  #pause .btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 4px; }
+  #pause .foot { font: 500 12px var(--display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); text-align: center; }
+  @media (max-width: 480px) { #pause .row { grid-template-columns: 1fr; gap: 6px; } #pause .hint { margin-left: 0; } #pause .btns { grid-template-columns: 1fr; } }
+  @media (max-width: 640px) {
+    #cluster canvas { width: 118px; height: 118px; }
+    #minimap { width: 120px; height: 120px; }
+    #help { display: none; }
+  }
+</style>
+
+<canvas id="game"></canvas>
+<div id="underwater" hidden></div>
+
+<div class="hud" id="modes" role="group" aria-label="Vehicle mode">
+  <button class="mode" id="m-car" aria-pressed="true"><kbd>1</kbd>Roadster</button>
+  <button class="mode" id="m-boat" aria-pressed="false"><kbd>2</kbd>Boat</button>
+  <button class="mode" id="m-plane" aria-pressed="false"><kbd>3</kbd>Plane</button>
+  <button class="mode" id="m-mech" aria-pressed="false"><kbd>4</kbd>Mech</button>
+</div>
+<div class="hud" id="morph"></div>
+<div class="hud" id="countdown" hidden></div>
+<div class="hud" id="wanted" hidden><b id="wStars"></b><span id="wInfo"></span></div>
+
+<div class="hud" id="status">
+  <div class="clock" id="clock">10:30</div>
+  <div class="cash" id="cash">$0</div>
+  <div id="biome">Plains</div>
+  <div class="sub" id="road"></div>
+</div>
+
+<div class="hud" id="help" hidden>
+ <div>
+  <h3>Roadster <span style="color:var(--dim);letter-spacing:0.04em;text-transform:none;font-weight:500">· AZERTY: Z Q S D</span></h3>
+  <dl>
+    <dt>W / ↑</dt><dd>Throttle</dd>
+    <dt>S / ↓</dt><dd>Brake, hold to reverse</dd>
+    <dt>A D / ← →</dt><dd>Steer</dd>
+    <dt>Space</dt><dd>Handbrake</dd>
+    <dt>Shift / Ctrl</dt><dd>Shift up / down (manual)</dd>
+    <dt>G</dt><dd>Automatic or manual gearbox</dd>
+  </dl>
+  <h3>Boat</h3>
+  <dl><dt>W S · A D</dt><dd>Outboard throttle, reverse, steer</dd></dl>
+ </div>
+ <div>
+  <h3>Plane</h3>
+  <dl>
+    <dt>W / S</dt><dd>Throttle lever up / down</dd>
+    <dt>↑ / ↓</dt><dd>Pitch down / up</dd>
+    <dt>A / D</dt><dd>Roll (nosewheel on the ground)</dd>
+    <dt>Q / E</dt><dd>Rudder</dd>
+    <dt>Space</dt><dd>Wheel brakes</dd>
+    <dt>F</dt><dd>Flight assist (wing leveller) on / off</dd>
+  </dl>
+  <h3>Controller</h3>
+  <dl>
+    <dt>LS · RT · LT</dt><dd>Steer, throttle, brake / reverse</dd>
+    <dt>X · B · Y</dt><dd>Handbrake, horn, headlights</dd>
+    <dt>RB / LB</dt><dd>Shift up / down (manual) · rudder in plane</dd>
+    <dt>A</dt><dd>Transform: roadster, boat, plane</dd>
+    <dt>RS · RS click</dt><dd>Look around · soft top</dd>
+    <dt>LS click · Back</dt><dd>Camera · map</dd>
+    <dt>D-pad</dt><dd>◀ ▶ indicators, ▼ hazards, ▲ radio station</dd>
+    <dt>Start</dt><dd>Pause</dd>
+  </dl>
+  <h3>Anywhere</h3>
+  <dl>
+    <dt>1 2 3 4</dt><dd>Transform: roadster, boat, plane, mech</dd>
+    <dt>Space</dt><dd>Mech: jump, hold for jump-jets</dd>
+    <dt>F</dt><dd>Mech: punch (controller RB) · plane: flight assist</dd>
+    <dt>0</dt><dd>Photo mode</dd>
+    <dt>Z</dt><dd>Nitro (once you've bought the kit in a garage)</dd>
+    <dt>Esc</dt><dd>Jobs, races, missions, weather, garage colours</dd>
+    <dt>L</dt><dd>Pop-up headlights</dd>
+    <dt>Q · E</dt><dd>Indicators left, right (AZERTY: A · E); O hazards</dd>
+    <dt>C</dt><dd>Camera: chase, far, cockpit</dd>
+    <dt>Drag</dt><dd>Look around</dd>
+    <dt>M</dt><dd>Map</dd>
+    <dt>N / B</dt><dd>Time +1 h / −1 h</dd>
+    <dt>R</dt><dd>Recover to nearest road</dd>
+    <dt>X</dt><dd>Repair all damage</dd>
+    <dt>T</dt><dd>Traffic on / off</dd>
+    <dt>H</dt><dd>Hide this panel</dd>
+    <dt>Esc</dt><dd>Pause menu</dd>
+    <dt>V</dt><dd>Raise or lower the soft top (when slow)</dd>
+    <dt>K / J</dt><dd>Next radio station / skip song</dd>
+    <dt>+ / −</dt><dd>Radio volume</dd>
+    <dt>Y</dt><dd>Horn</dd>
+    <dt>U</dt><dd>Sound on / off</dd>
+    <dt>P</dt><dd>Graphics quality: high, medium, low</dd>
+    <dt>I</dt><dd>Tyre and brake telemetry</dd>
+  </dl>
+ </div>
+ <div class="close">Press H to hide or show controls</div>
+</div>
+
+<div class="hud" id="radio" hidden><div class="st" id="radioSt"></div><div class="tr" id="radioTr"></div></div>
+
+<div id="pause" hidden role="dialog" aria-modal="true" aria-labelledby="pTitle">
+  <div class="panel">
+    <h2 id="pTitle">Paused</h2>
+    <button class="primary" data-act="resume" id="pResume">Resume</button>
+    <div class="row top"><span>Jobs</span><div id="pJobs" class="missionList"></div></div>
+    <div class="row top"><span>Missions</span><div><div id="pMissions" class="missionList"></div><button data-act="cancel-mission" id="pCancelMission" hidden>Cancel current mission</button></div></div>
+    <div class="row"><span>Garage · paint</span><div class="swatches"><button data-paint="#b5121b" title="Classic Red" aria-label="Classic Red" style="background:#b5121b"></button><button data-paint="#1d3f7a" title="Mariner Blue" aria-label="Mariner Blue" style="background:#1d3f7a"></button><button data-paint="#eeece6" title="Crystal White" aria-label="Crystal White" style="background:#eeece6"></button><button data-paint="#0d0d0f" title="Brilliant Black" aria-label="Brilliant Black" style="background:#0d0d0f"></button><button data-paint="#e8b923" title="Sunburst Yellow" aria-label="Sunburst Yellow" style="background:#e8b923"></button><button data-paint="#1f4d36" title="British Racing Green" aria-label="British Racing Green" style="background:#1f4d36"></button><button data-paint="#a7abb0" title="Silver Stone" aria-label="Silver Stone" style="background:#a7abb0"></button></div></div>
+    <div class="row"><span>Garage · wheels</span><div class="seg" data-opt="wheels"><button data-v="silver">Silver</button><button data-v="gunmetal">Gunmetal</button><button data-v="gold">Gold</button><button data-v="white">White</button><button data-v="black">Black</button></div></div>
+    <div class="row"><span>Driving model</span><div class="seg" data-opt="realism"><button data-v="real" id="pReal">Realistic</button><button data-v="arcade" id="pArcade">Sim-arcade</button></div></div>
+    <p class="hint" id="pRealHint"></p>
+    <div class="row"><span>Weather</span><div class="seg" data-opt="weather"><button data-v="auto" id="pW_auto">Auto</button><button data-v="clear" id="pW_clear">Clear</button><button data-v="overcast" id="pW_overcast">Cloudy</button><button data-v="rain" id="pW_rain">Rain</button><button data-v="fog" id="pW_fog">Fog</button></div></div>
+    <div class="row"><span>Graphics</span><div class="seg" data-opt="quality"><button data-v="2" id="pQ2">High</button><button data-v="1" id="pQ1">Medium</button><button data-v="0" id="pQ0">Low</button></div></div>
+    <div class="row"><span>Radio</span><div class="radioCtl"><button data-act="radio-prev" id="pRadioPrev" aria-label="Previous station">&lsaquo;</button><span id="pRadio">Radio off</span><button data-act="radio-next" id="pRadioNext" aria-label="Next station">&rsaquo;</button></div></div>
+    <div class="row"><span>Radio volume</span><input type="range" id="pVol" min="0" max="100" step="5" aria-label="Radio volume"></div>
+    <div class="row"><span>Your music</span><button data-act="files" id="pFiles">Choose files from this computer</button></div>
+    <div class="row"><span>Sound</span><div class="seg" data-opt="sound"><button data-v="on" id="pSndOn">On</button><button data-v="off" id="pSndOff">Off</button></div></div>
+    <div class="btns"><button data-act="recover" id="pRecover">Recover</button><button data-act="repair" id="pRepair">Repair</button><button data-act="help" id="pHelp">Controls</button><button data-act="photo" id="pPhoto">Photo mode</button></div>
+    <div class="foot">Esc or Start to resume · D-pad and A to choose</div>
+  </div>
+</div>
+
+<div class="hud" id="mission" hidden><div id="mArrow">▲</div><div><div id="mTitle"></div><div id="mInfo"></div><div id="mTime"></div></div></div>
+<div id="photoBar" hidden><b>Photo mode</b> · WASD move (Shift fast) · Q/E down/up · drag to look · wheel zoom · [ ] time of day · <button id="photoSave">Save photo (Enter)</button> · Esc or 0 to exit</div>
+<div class="hud" id="warn"></div>
+<div class="hud" id="toast"></div>
+
+<div class="hud" id="mapWrap"><canvas id="minimap" width="352" height="352"></canvas></div>
+<canvas id="bigmap" class="hud" width="1024" height="1024" hidden></canvas>
+
+<canvas id="instr" class="hud" width="1040" height="300" hidden aria-label="Flight instruments"></canvas>
+<canvas id="mechHud" class="hud" hidden aria-hidden="true"></canvas>
+<div class="hud" id="nitro" hidden><i></i></div>
+<div class="hud" id="cluster">
+  <canvas id="tyres" width="200" height="240" aria-label="Tyre and brake temperatures" hidden></canvas>
+  <canvas id="fuel" width="80" height="240" aria-label="Fuel"></canvas>
+  <canvas id="dmg" width="160" height="240" aria-label="Damage"></canvas>
+  <div id="blink" aria-hidden="true"><span id="blL">◀</span><span id="blR">▶</span></div>
+  <canvas id="tach" width="336" height="336"></canvas>
+  <canvas id="speedo" width="336" height="336"></canvas>
+</div>
+
+<div id="loader">
+  <div class="inner">
+    <h1>MX-5 <span>Odyssey</span></h1>
+    <p>A 1991 roadster, sixteen square kilometres of highway, forest, desert, mountains, sea and sky. Press 2 to float. Press 3 to fly.</p>
+    <div id="bar"><i></i></div>
+    <div id="stage">Starting</div>
+    <button id="go" hidden>Drive</button>
+    <div id="spec">
+      <div>Engine<b>B6-ZE 1.6</b></div>
+      <div>Power<b>116 PS</b></div>
+      <div>Mass<b>1030 kg</b></div>
+    </div>
+    <p id="credit">Car model: <a href="https://sketchfab.com/3d-models/1989-mazda-mx-5-na-bd6429f3d02a426f9a714a66c33bb353" target="_blank" rel="noopener">“1989 Mazda MX-5 (NA)”</a> by <a href="https://sketchfab.com/Res1n" target="_blank" rel="noopener">Res1n</a>, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>; split into parts, simplified and compressed.</p>
+  </div>
+</div>
+
+<script>
+  // Show load failures on the loading screen instead of hanging on "Starting".
+  (function () {
+    var shown = false;
+    function fail(msg) {
+      if (shown) return; shown = true;
+      var st = document.getElementById('stage');
+      if (st) { st.textContent = 'Could not start: ' + msg; st.style.color = '#ffcf3f'; st.style.textTransform = 'none'; st.style.letterSpacing = '0.02em'; }
+    }
+    window.addEventListener('error', function (e) { fail((e.message || 'a script failed to load') + (e.filename ? ' (' + e.filename.split('/').pop() + ')' : '')); });
+    window.addEventListener('unhandledrejection', function (e) { fail(String(e.reason && e.reason.message || e.reason)); });
+    var c = document.createElement('canvas');
+    if (!(c.getContext('webgl2') || c.getContext('webgl'))) fail('this browser has WebGL turned off. Enable hardware acceleration and reload.');
+    window.__loadFail = fail;
+  })();
+</script>
+<script src="game.js" onerror="window.__loadFail && window.__loadFail('game.js did not download')"></script>
+
+</body></html>
