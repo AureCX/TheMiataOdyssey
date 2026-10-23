@@ -1,4 +1,3 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <meta charset="utf-8">
 <title>MX-5 Odyssey</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -39,6 +38,35 @@
   #status { top: calc(14px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); text-align: right; font: 500 14px/1.35 var(--display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); text-shadow: 0 1px 3px rgba(0,0,0,0.7); }
   #status .sub { color: var(--dim); font-size: 12px; }
   #countdown { position: fixed; top: 34%; left: 50%; transform: translate(-50%, -50%); font: 700 120px/1 var(--display); color: #fff; text-shadow: 0 4px 24px rgba(0,0,0,0.6); pointer-events: none; }
+  #eventHud { position: fixed; top: 120px; right: 24px; width: 230px; padding: 10px 14px; border-radius: 8px; background: rgba(12,14,18,0.72); color: #fff; pointer-events: none; font-family: var(--display); }
+  #eventHud small { display: block; font: 600 13px var(--display); letter-spacing: 0.1em; text-transform: uppercase; color: #cfd3d8; }
+  #eventHud b { display: block; font: 700 40px/1.1 var(--display); font-variant-numeric: tabular-nums; }
+  #evNotes { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0; } #evNotes span { font: 700 18px var(--display); padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.12); } #evNotes span.first { font-size: 26px; background: #ffb000; color: #111; }
+  #evBars .bar { display: flex; align-items: center; gap: 6px; margin-top: 4px; font: 600 12px var(--display); } #evBars .bar span { width: 52px; } #evBars i { flex: 1; height: 8px; border-radius: 4px; background: #333; overflow: hidden; } #evBars em { display: block; height: 100%; background: #3fd17a; } #evBars em.boss { background: #ff5a1a; }
+  #statsUI, #galleryUI { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); }
+  #statsUI[hidden], #galleryUI[hidden] { display: none; }
+  #statsUI .panel, #galleryUI .panel { width: min(760px, 94vw); max-height: 88vh; overflow: auto; padding: 20px 24px; border-radius: 10px; background: #15171b; color: #eef; font-family: var(--display); }
+  #statsUI h2, #galleryUI h2 { margin: 0 0 10px; font: 700 28px var(--display); text-transform: uppercase; } #statsUI h3 { margin: 16px 0 8px; font: 700 18px var(--display); text-transform: uppercase; }
+  #statsUI table { width: 100%; border-collapse: collapse; font-size: 15px; } #statsUI td { padding: 3px 4px; border-bottom: 1px solid #2a2d33; } #statsUI td + td { text-align: right; font-variant-numeric: tabular-nums; }
+  #statsUI .ach { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; } #statsUI .ach div { padding: 8px 10px; border-radius: 6px; background: #20232a; opacity: 0.5; } #statsUI .ach div.on { opacity: 1; background: #2b2a1c; box-shadow: inset 0 0 0 1px #d4a62a; }
+  #statsUI .ach b { display: block; font-size: 15px; } #statsUI .ach small { color: #aab; }
+  #statsUI .primary, #galleryUI .primary { margin-top: 16px; }
+  #galleryUI .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; } #galleryUI figure { position: relative; margin: 0; } #galleryUI img { width: 100%; border-radius: 6px; display: block; }
+  #galleryUI figcaption { font-size: 12px; color: #aab; margin-top: 3px; } #galleryUI [data-del] { position: absolute; top: 4px; right: 4px; width: 26px; height: 26px; border-radius: 13px; border: 0; background: rgba(0,0,0,0.6); color: #fff; cursor: pointer; }
+  #fade { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity 0.6s; z-index: 50; } #fade.on { opacity: 1; }
+  #photoFx { opacity: 0.85; }
+  #atc { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); max-width: min(720px, 90vw); padding: 6px 14px; border-radius: 6px; background: rgba(10,30,20,0.72); color: #b8ffd0; font: 500 15px var(--display); letter-spacing: 0.03em; pointer-events: none; text-align: center; }
+  #atc b { color: #fff; margin-right: 6px; text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; }
+  #prompt { position: fixed; bottom: 150px; left: 50%; transform: translateX(-50%); padding: 8px 16px; border-radius: 6px; background: rgba(12,14,18,0.72); color: #fff; font: 600 17px var(--display); letter-spacing: 0.04em; pointer-events: none; white-space: nowrap; }
+  #trainHud { position: fixed; right: 24px; bottom: 200px; width: 190px; padding: 10px 12px; border-radius: 8px; background: rgba(12,14,18,0.72); color: #fff; font: 500 14px var(--display); pointer-events: none; }
+  #trainHud b { font: 700 34px/1 var(--display); font-variant-numeric: tabular-nums; }
+  #trainHud .sig { float: right; width: 18px; height: 46px; border-radius: 9px; background: #111; box-shadow: inset 0 0 0 2px #333; }
+  #trainHud .sig.green { background: radial-gradient(circle at 50% 78%, #3f3 0 6px, #111 7px); } #trainHud .sig.yellow { background: radial-gradient(circle at 50% 50%, #fc0 0 6px, #111 7px); } #trainHud .sig.red { background: radial-gradient(circle at 50% 22%, #f33 0 6px, #111 7px); }
+  #trainHud .bars { display: flex; gap: 6px; margin: 6px 0; } #trainHud .bars i { display: block; height: 6px; flex: 1; border-radius: 3px; background: #333; }
+  #trainHud small { display: block; color: #cfd3d8; }
+  #driftHud { position: fixed; top: 150px; left: 50%; transform: translateX(-50%); text-align: center; pointer-events: none; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.6); }
+  #driftHud b { display: block; font: 700 40px/1 var(--display); letter-spacing: 0.04em; color: #ffb000; font-variant-numeric: tabular-nums; }
+  #driftHud span { font: 600 15px var(--display); letter-spacing: 0.14em; text-transform: uppercase; }
   #wanted { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); text-align: center; font: 600 13px var(--display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); background: rgba(10,11,13,0.72); border: 1px solid rgba(255,80,80,0.5); border-radius: 4px; padding: 6px 12px; }
   #wanted b { display: block; font-size: 22px; letter-spacing: 0.2em; color: #ff4a3d; }
   #status .cash { font: 700 18px var(--display); letter-spacing: 0.06em; color: #7fe08a; font-variant-numeric: tabular-nums; }
@@ -177,6 +205,11 @@
 </div>
 <div class="hud" id="morph"></div>
 <div class="hud" id="countdown" hidden></div>
+<div class="hud" id="prompt" hidden></div>
+<div class="hud" id="atc" hidden></div>
+<div class="hud" id="eventHud" hidden><small id="evTitle"></small><b id="evBig"></b><div id="evNotes"></div><small id="evLine"></small><div id="evBars" hidden><div class="bar"><span>Armour</span><i><em id="evHp"></em></i></div><div class="bar" id="evBossW"><span>Enemies</span><i><em id="evBoss" class="boss"></em></i></div></div></div>
+<div class="hud" id="trainHud" hidden><div class="sig" id="tSig"></div><div><b id="tSpd">0</b> km/h</div><div class="bars"><i id="tThr"></i><i id="tBrk"></i></div><small id="tInfo"></small></div>
+<div class="hud" id="driftHud" hidden><b id="dScore">0</b><span id="dMult"></span></div>
 <div class="hud" id="wanted" hidden><b id="wStars"></b><span id="wInfo"></span></div>
 
 <div class="hud" id="status">
@@ -225,10 +258,15 @@
   <dl>
     <dt>1 2 3 4</dt><dd>Transform: roadster, boat, plane, mech</dd>
     <dt>Space</dt><dd>Mech: jump, hold for jump-jets</dd>
-    <dt>F</dt><dd>Mech: punch (controller RB) · plane: flight assist</dd>
-    <dt>0</dt><dd>Photo mode</dd>
+    <dt>F</dt><dd>Car: load onto the Motorail or ferry / drive off (when prompted) · mech: punch, or fire the arm cannon when it's out (controller RB) · plane: flight assist</dd>
+    <dt>Q / E</dt><dd>Mech: arm cannon out/in (A on AZERTY; controller LB) / fire a shoulder missile (controller R3)</dd>
+    <dt>6 / 7</dt><dd>GPS screen on/off / "Where to?" destination list (arrows + Enter, or click). Click the big map (M) to navigate anywhere</dd>
+    <dt>8</dt><dd>Rear-view mirror on / off</dd>
+    <dt>F (stopped)</dt><dd>Pick up a hitchhiker · car wash at a fuel station · mulled cider at the Christmas market</dd>
+    <dt>0</dt><dd>Photo mode (photo spots and hint-only postcards pay out)</dd>
     <dt>Z</dt><dd>Nitro (once you've bought the kit in a garage)</dd>
-    <dt>Esc</dt><dd>Jobs, races, missions, weather, garage colours</dd>
+    <dt>5</dt><dd>Helicopter (W/S collective, A/D yaw, arrows tilt) · the pause menu's Ride row has the motorbike, Strada GT and jet ski; 1 gets you back in the MX-5</dd>
+    <dt>Esc</dt><dd>Jobs, races, missions, weekly board, neon night races, postcards, weather, garage colours</dd>
     <dt>L</dt><dd>Pop-up headlights</dd>
     <dt>Q · E</dt><dd>Indicators left, right (AZERTY: A · E); O hazards</dd>
     <dt>C</dt><dd>Camera: chase, far, cockpit</dd>
@@ -258,25 +296,31 @@
   <div class="panel">
     <h2 id="pTitle">Paused</h2>
     <button class="primary" data-act="resume" id="pResume">Resume</button>
-    <div class="row top"><span>Jobs</span><div id="pJobs" class="missionList"></div></div>
+    <div class="row"><span>Ride</span><div class="seg" id="pRides"><button data-ride="mx5">MX-5</button><button data-ride="bike">Motorbike</button><button data-ride="gt">Strada GT</button><button data-ride="ski">Jet ski</button><button data-ride="heli">Helicopter</button></div></div>
+    <div class="row top"><span>Jobs<small id="pPilot" style="display:block;font-weight:400;opacity:.7;font-size:12px;max-width:110px"></small></span><div id="pJobs" class="missionList"></div></div>
     <div class="row top"><span>Missions</span><div><div id="pMissions" class="missionList"></div><button data-act="cancel-mission" id="pCancelMission" hidden>Cancel current mission</button></div></div>
     <div class="row"><span>Garage · paint</span><div class="swatches"><button data-paint="#b5121b" title="Classic Red" aria-label="Classic Red" style="background:#b5121b"></button><button data-paint="#1d3f7a" title="Mariner Blue" aria-label="Mariner Blue" style="background:#1d3f7a"></button><button data-paint="#eeece6" title="Crystal White" aria-label="Crystal White" style="background:#eeece6"></button><button data-paint="#0d0d0f" title="Brilliant Black" aria-label="Brilliant Black" style="background:#0d0d0f"></button><button data-paint="#e8b923" title="Sunburst Yellow" aria-label="Sunburst Yellow" style="background:#e8b923"></button><button data-paint="#1f4d36" title="British Racing Green" aria-label="British Racing Green" style="background:#1f4d36"></button><button data-paint="#a7abb0" title="Silver Stone" aria-label="Silver Stone" style="background:#a7abb0"></button></div></div>
     <div class="row"><span>Garage · wheels</span><div class="seg" data-opt="wheels"><button data-v="silver">Silver</button><button data-v="gunmetal">Gunmetal</button><button data-v="gold">Gold</button><button data-v="white">White</button><button data-v="black">Black</button></div></div>
     <div class="row"><span>Driving model</span><div class="seg" data-opt="realism"><button data-v="real" id="pReal">Realistic</button><button data-v="arcade" id="pArcade">Sim-arcade</button></div></div>
     <p class="hint" id="pRealHint"></p>
-    <div class="row"><span>Weather</span><div class="seg" data-opt="weather"><button data-v="auto" id="pW_auto">Auto</button><button data-v="clear" id="pW_clear">Clear</button><button data-v="overcast" id="pW_overcast">Cloudy</button><button data-v="rain" id="pW_rain">Rain</button><button data-v="fog" id="pW_fog">Fog</button></div></div>
+    <div class="row"><span>Weather</span><div class="seg" data-opt="weather"><button data-v="auto" id="pW_auto">Auto</button><button data-v="clear" id="pW_clear">Clear</button><button data-v="overcast" id="pW_overcast">Cloudy</button><button data-v="rain" id="pW_rain">Rain</button><button data-v="storm" id="pW_storm">Storm</button><button data-v="fog" id="pW_fog">Fog</button></div></div>
+    <div class="row"><span>Season</span><div class="seg" data-opt="season"><button data-v="auto" id="pS_auto">Auto</button><button data-v="spring" id="pS_spring">Spring</button><button data-v="summer" id="pS_summer">Summer</button><button data-v="autumn" id="pS_autumn">Autumn</button><button data-v="winter" id="pS_winter">Winter</button></div></div>
     <div class="row"><span>Graphics</span><div class="seg" data-opt="quality"><button data-v="2" id="pQ2">High</button><button data-v="1" id="pQ1">Medium</button><button data-v="0" id="pQ0">Low</button></div></div>
     <div class="row"><span>Radio</span><div class="radioCtl"><button data-act="radio-prev" id="pRadioPrev" aria-label="Previous station">&lsaquo;</button><span id="pRadio">Radio off</span><button data-act="radio-next" id="pRadioNext" aria-label="Next station">&rsaquo;</button></div></div>
+    <div class="row"><span>Engine volume</span><input type="range" id="pEngVol" min="0" max="150" step="5" aria-label="Engine volume"></div>
     <div class="row"><span>Radio volume</span><input type="range" id="pVol" min="0" max="100" step="5" aria-label="Radio volume"></div>
     <div class="row"><span>Your music</span><button data-act="files" id="pFiles">Choose files from this computer</button></div>
+    <div class="row"><span>Voices</span><div class="seg" data-opt="atc"><button data-v="on" id="pAtcOn">On</button><button data-v="off" id="pAtcOff">Off</button></div></div>
     <div class="row"><span>Sound</span><div class="seg" data-opt="sound"><button data-v="on" id="pSndOn">On</button><button data-v="off" id="pSndOff">Off</button></div></div>
-    <div class="btns"><button data-act="recover" id="pRecover">Recover</button><button data-act="repair" id="pRepair">Repair</button><button data-act="help" id="pHelp">Controls</button><button data-act="photo" id="pPhoto">Photo mode</button></div>
+    <div class="btns"><button data-act="recover" id="pRecover">Recover</button><button data-act="repair" id="pRepair">Repair</button><button data-act="help" id="pHelp">Controls</button><button data-act="photo" id="pPhoto">Photo mode</button><button data-act="gallery">Gallery</button><button data-act="stats">Stats & trophies</button><button data-act="home">Go home</button><button data-act="assist">Roadside assistance</button></div>
     <div class="foot">Esc or Start to resume · D-pad and A to choose</div>
   </div>
 </div>
 
 <div class="hud" id="mission" hidden><div id="mArrow">▲</div><div><div id="mTitle"></div><div id="mInfo"></div><div id="mTime"></div></div></div>
-<div id="photoBar" hidden><b>Photo mode</b> · WASD move (Shift fast) · Q/E down/up · drag to look · wheel zoom · [ ] time of day · <button id="photoSave">Save photo (Enter)</button> · Esc or 0 to exit</div>
+<div id="photoBar" hidden><b>Photo mode</b> · WASD move (Shift fast) · Q/E down/up · drag to look · wheel zoom · [ ] time of day · <button id="photoSave">Save photo (Enter)</button> · Esc or 0 to exit<br><small id="photoFx"></small></div>
+<div id="galleryUI" hidden role="dialog" aria-modal="true"></div>
+<div id="fade"></div>
 <div class="hud" id="warn"></div>
 <div class="hud" id="toast"></div>
 
@@ -328,5 +372,3 @@
   })();
 </script>
 <script src="game.js" onerror="window.__loadFail && window.__loadFail('game.js did not download')"></script>
-
-</body></html>

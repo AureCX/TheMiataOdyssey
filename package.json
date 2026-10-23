@@ -1,0 +1,6 @@
+{
+  "name": "mx5-odyssey",
+  "private": true,
+  "scripts": { "build": "esbuild src/main.js --bundle --format=iife --minify --target=es2020 --outfile=game.js" },
+  "devDependencies": { "esbuild": "0.24.0", "three": "0.160.0" }
+}
